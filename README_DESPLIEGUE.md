@@ -12,7 +12,7 @@ Licencia: GNU Affero General Public License v3.0 o posterior (`AGPL-3.0-or-later
 - `requirements.txt`.
 - `.env.example`, sin credenciales reales.
 - `data/centros_example.csv` como CSV de ejemplo ficticio.
-- Documentacion: `README_v2.md`, `docs/guia_usuario.md`, `docs/arquitectura.md` y este archivo.
+- Documentacion: `README.md`, `docs/guia_usuario.md`, `docs/arquitectura.md` y este archivo.
 - `NOTICE.md`, con referencia al repositorio original.
 - `LICENSE`, con la licencia AGPLv3.
 
