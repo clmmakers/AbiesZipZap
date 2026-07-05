@@ -10,39 +10,87 @@
   <a class="button-like" href="{{ url_for('centers') }}">Volver</a>
 </section>
 
-<section class="grid two">
-  <article class="panel">
-    <h2>Datos del centro</h2>
+<section class="center-edit-grid" aria-label="Edicion del centro">
+  <article class="panel edit-card">
+    <div class="edit-card-head">
+      <div>
+        <p class="eyebrow">SQLite</p>
+        <h2>Datos Del Centro</h2>
+        <p class="muted">Corrige los datos que se usaran en Abies+ y en proximas ejecuciones.</p>
+      </div>
+      <span class="edit-badge">{{ center.center_type }}</span>
+    </div>
     <form class="detail-form" method="post" action="{{ url_for('update_center_detail', center_code=center.center_code) }}">
       <input type="hidden" name="action" value="data">
-      <label><span>Nombre</span><input name="center_name" value="{{ center.center_name }}" required></label>
-      <label><span>Tipo Abies+</span>
-        <select name="center_type" required>
-          {% for option in center_type_options %}
-            <option value="{{ option }}" {{ 'selected' if option == center.center_type else '' }}>{{ option }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      <label><span>Titularidad</span><input name="ownership" value="{{ center.ownership or '' }}"></label>
-      <label><span>Provincia</span><input name="province" value="{{ center.province or '' }}"></label>
-      <label><span>Localidad</span><input name="city" value="{{ center.city or '' }}"></label>
-      <label><span>Direccion</span><input name="postal_address" value="{{ center.postal_address or '' }}"></label>
-      <label><span>CP</span><input name="postal_code" value="{{ center.postal_code or '' }}"></label>
-      <label><span>Email</span><input name="email" value="{{ center.email or '' }}"></label>
-      <label><span>Telefono</span><input name="phone" value="{{ center.phone or '' }}"></label>
-      <div class="inline-options">
-        <label class="inline-check"><input type="checkbox" name="selected" value="1" {{ 'checked' if center.selected else '' }}> Seleccionado</label>
-        <label class="inline-check"><input type="checkbox" name="enabled" value="1" {{ 'checked' if center.enabled else '' }}> Activo</label>
+      <div class="field-grid">
+        <label class="form-field span-2">
+          <span>Nombre Del Centro</span>
+          <input name="center_name" value="{{ center.center_name }}" autocomplete="off" placeholder="IES Francisco Nieva…" required>
+        </label>
+        <label class="form-field">
+          <span>Tipo Abies+</span>
+          <select name="center_type" autocomplete="off" required>
+            {% for option in center_type_options %}
+              <option value="{{ option }}" {{ 'selected' if option == center.center_type else '' }}>{{ option }}</option>
+            {% endfor %}
+          </select>
+          <small>Debe coincidir con una opcion real de Abies+.</small>
+        </label>
+        <label class="form-field">
+          <span>Titularidad</span>
+          <input name="ownership" value="{{ center.ownership or '' }}" autocomplete="off" placeholder="Publico…">
+        </label>
+        <label class="form-field">
+          <span>Provincia</span>
+          <input name="province" value="{{ center.province or '' }}" autocomplete="off" placeholder="Ciudad Real…">
+        </label>
+        <label class="form-field">
+          <span>Localidad</span>
+          <input name="city" value="{{ center.city or '' }}" autocomplete="address-level2" placeholder="Valdepenas…">
+        </label>
+        <label class="form-field span-2">
+          <span>Direccion Postal</span>
+          <input name="postal_address" value="{{ center.postal_address or '' }}" autocomplete="street-address" placeholder="Av. de los Estudiantes, 99…">
+        </label>
+        <label class="form-field compact-field">
+          <span>CP</span>
+          <input name="postal_code" value="{{ center.postal_code or '' }}" autocomplete="postal-code" inputmode="numeric" placeholder="13300…">
+        </label>
+        <label class="form-field">
+          <span>Email</span>
+          <input type="email" name="email" value="{{ center.email or '' }}" autocomplete="email" spellcheck="false" placeholder="centro@example.invalid…">
+        </label>
+        <label class="form-field">
+          <span>Telefono</span>
+          <input type="tel" name="phone" value="{{ center.phone or '' }}" autocomplete="tel" inputmode="tel" placeholder="926310521…">
+        </label>
       </div>
-      <button type="submit">Guardar datos</button>
+      <div class="form-actions split-actions">
+        <div class="inline-options" aria-label="Estado del centro">
+          <label class="inline-check"><input type="checkbox" name="selected" value="1" {{ 'checked' if center.selected else '' }}> Seleccionado</label>
+          <label class="inline-check"><input type="checkbox" name="enabled" value="1" {{ 'checked' if center.enabled else '' }}> Activo</label>
+        </div>
+        <button class="process-submit" type="submit">Guardar Datos</button>
+      </div>
     </form>
   </article>
-  <article class="panel">
-    <h2>Notas</h2>
-    <form class="detail-form" method="post" action="{{ url_for('update_center_detail', center_code=center.center_code) }}">
+  <article class="panel edit-card notes-card">
+    <div class="edit-card-head">
+      <div>
+        <p class="eyebrow">Anotaciones</p>
+        <h2>Notas</h2>
+        <p class="muted">Guarda contexto operativo para futuras sesiones.</p>
+      </div>
+    </div>
+    <form class="detail-form notes-form" method="post" action="{{ url_for('update_center_detail', center_code=center.center_code) }}">
       <input type="hidden" name="action" value="notes">
-      <label><span>Anotaciones internas</span><textarea name="notes" rows="12" placeholder="Sin notas.">{{ center.notes or '' }}</textarea></label>
-      <button type="submit">Guardar notas</button>
+      <label class="form-field notes-field">
+        <span>Anotaciones Internas</span>
+        <textarea name="notes" rows="12" autocomplete="off" placeholder="Ejemplo: revisar gestor elegido, incidencia de login, observaciones del centro…">{{ center.notes or '' }}</textarea>
+      </label>
+      <div class="form-actions end-actions">
+        <button class="process-submit" type="submit">Guardar Notas</button>
+      </div>
     </form>
   </article>
 </section>
