@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ center.center_code }} - AbiesZipZap{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <div>
+    <p class="eyebrow">{{ center.center_code }}</p>
+    <h1>{{ center.center_name }}</h1>
+    <p class="muted">{{ center.city }} · {{ center.province }} · {{ center.email or 'sin email' }}</p>
+  </div>
+  <a class="button-like" href="{{ url_for('centers') }}">Volver</a>
+</section>
+
+<section class="grid two">
+  <article class="panel"><h2>Datos del centro</h2><dl class="meta">
+    <dt>Tipo</dt><dd>{{ center.center_type }}</dd>
+    <dt>Titularidad</dt><dd>{{ center.ownership }}</dd>
+    <dt>Direccion</dt><dd>{{ center.postal_address }}</dd>
+    <dt>CP</dt><dd>{{ center.postal_code }}</dd>
+    <dt>Telefono</dt><dd>{{ center.phone }}</dd>
+    <dt>Seleccionado</dt><dd>{{ 'si' if center.selected else 'no' }}</dd>
+  </dl></article>
+  <article class="panel"><h2>Notas</h2><p>{{ center.notes or 'Sin notas.' }}</p></article>
+</section>
+
+<section class="table-card"><h2>Descargas</h2><div class="table-wrap"><table><thead><tr><th>ID</th><th>Estado</th><th>Modo</th><th>Fecha export</th><th>Archivo</th><th>Fecha</th></tr></thead><tbody>
+{% for d in downloads %}<tr><td>{{ d.id }}</td><td><span class="chip {{ d.status }}">{{ d.status }}</span></td><td>{{ d.download_mode }}</td><td>{{ d.export_date_detected }} ({{ d.export_age_days }} dias)</td><td>{% if d.file_path %}<a href="{{ url_for('download_file', download_id=d.id) }}">{{ d.file_name }}</a>{% endif %}</td><td>{{ d.downloaded_at }}</td></tr>{% else %}<tr><td colspan="6" class="empty">Sin descargas.</td></tr>{% endfor %}
+</tbody></table></div></section>
+
+<section class="table-card"><h2>Checks AbiesWeb</h2><div class="table-wrap"><table><thead><tr><th>ID</th><th>Estado</th><th>Usuarios</th><th>U.O.</th><th>Usuario elegido</th><th>Fecha</th></tr></thead><tbody>
+{% for c in checks %}<tr><td>{{ c.id }}</td><td><span class="chip {{ c.status }}">{{ c.status }}</span></td><td>{{ c.users_found }}</td><td>{{ c.abiesweb_uo_label }}</td><td>{{ c.selected_username }}</td><td>{{ c.checked_at }}</td></tr>{% else %}<tr><td colspan="6" class="empty">Sin checks.</td></tr>{% endfor %}
+</tbody></table></div></section>
+
+<section class="table-card"><h2>Usuarios detectados</h2><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Usuario</th><th>Documento</th><th>Perfiles</th><th>Fecha</th></tr></thead><tbody>
+{% for u in users %}<tr><td>{{ u.full_name }}</td><td>{{ u.username }}</td><td>{{ u.document }}</td><td>{{ u.profiles }}</td><td>{{ u.detected_at }}</td></tr>{% else %}<tr><td colspan="5" class="empty">Sin usuarios.</td></tr>{% endfor %}
+</tbody></table></div></section>
+
+<section class="table-card"><h2>Logs recientes</h2><div class="table-wrap"><table><thead><tr><th>Accion</th><th>Estado</th><th>Mensaje</th><th>Fecha</th></tr></thead><tbody>
+{% for log in logs %}<tr><td>{{ log.action }}</td><td><span class="chip {{ log.status }}">{{ log.status }}</span></td><td>{{ log.message }}</td><td>{{ log.created_at }}</td></tr>{% else %}<tr><td colspan="4" class="empty">Sin logs.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

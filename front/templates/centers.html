@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Centros - AbiesZipZap{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <div>
+    <p class="eyebrow">Consola local</p>
+    <h1>Centros</h1>
+    <p class="muted">Selecciona centros y revisa el ultimo estado de AbiesWeb y sus descargas ZIP.</p>
+  </div>
+  <div class="stats">
+    <div><strong>{{ summary.total or 0 }}</strong><span>total</span></div>
+    <div><strong>{{ summary.selected_count or 0 }}</strong><span>seleccionados</span></div>
+    <div><strong>{{ summary.enabled_count or 0 }}</strong><span>activos</span></div>
+  </div>
+</section>
+
+<section class="panel">
+  <form class="filters" method="get" action="{{ url_for('centers') }}">
+    <input name="q" value="{{ q }}" placeholder="Buscar codigo, nombre, localidad o email">
+    <select name="status">
+      <option value="all" {{ 'selected' if status == 'all' else '' }}>Todos los estados</option>
+      <option value="pending" {{ 'selected' if status == 'pending' else '' }}>Pendientes</option>
+      <option value="downloaded" {{ 'selected' if status == 'downloaded' else '' }}>Descargados</option>
+      <option value="error" {{ 'selected' if status == 'error' else '' }}>Errores</option>
+      <option value="not_found" {{ 'selected' if status == 'not_found' else '' }}>No encontrados</option>
+    </select>
+    <select name="selected">
+      <option value="all" {{ 'selected' if selected == 'all' else '' }}>Seleccion: todos</option>
+      <option value="yes" {{ 'selected' if selected == 'yes' else '' }}>Solo seleccionados</option>
+      <option value="no" {{ 'selected' if selected == 'no' else '' }}>No seleccionados</option>
+    </select>
+    <button type="submit">Filtrar</button>
+  </form>
+  <div class="actions-row">
+    <form method="post" action="{{ url_for('select_all') }}"><button>Seleccionar activos</button></form>
+    <form method="post" action="{{ url_for('clear_selection') }}"><button class="secondary">Limpiar seleccion</button></form>
+    {% if summary.total %}
+      <a class="csv-hint" href="{{ url_for('settings') }}#csv">Gestionar CSV en Configuracion</a>
+    {% else %}
+      <form method="post" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data" class="upload-inline">
+        <input type="file" name="csv_file" accept=".csv" required>
+        <button type="submit" class="secondary">Subir CSV de centros</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Procesar seleccion</h2>
+  <p class="muted">Lanza un job secuencial en segundo plano con los centros seleccionados.</p>
+  <form class="process-form" method="post" action="{{ url_for('start_job') }}">
+    <label class="process-field">
+      <span class="field-label">Reintentos <span class="info-tip" tabindex="0" aria-label="Ayuda sobre reintentos" data-help="Numero de veces que se reintentara un centro si falla por error tecnico. No reintenta centros no encontrados o sin gestores.">i</span></span>
+      <input name="retries" value="0" placeholder="0">
+    </label>
+    <label class="process-field">
+      <span class="field-label">Limite <span class="info-tip" tabindex="0" aria-label="Ayuda sobre limite" data-help="Procesa solo los primeros N centros seleccionados. Dejalo vacio para procesar todos los seleccionados.">i</span></span>
+      <input name="limit" value="" placeholder="Opcional">
+    </label>
+    <label class="process-check">
+      <input type="checkbox" name="force_remote_check" value="1">
+      <span class="check-copy">
+        <span class="field-label">Forzar comprobacion remota <span class="info-tip" tabindex="0" aria-label="Ayuda sobre comprobacion remota" data-help="Entra en AbiesWeb aunque ya exista una descarga registrada hoy. Usalo para verificar la fecha remota o regenerar si tienes dudas.">i</span></span>
+        <small>Ignora el salto rapido por descarga de hoy.</small>
+      </span>
+    </label>
+    <button class="process-submit" type="submit">Procesar seleccionados</button>
+  </form>
+  <p class="muted">Alternativa CLI:</p>
+  <pre><code>{{ command }}</code></pre>
+</section>
+
+<form method="post" action="{{ url_for('update_selection') }}">
+  <input type="hidden" name="q" value="{{ q }}">
+  <input type="hidden" name="status" value="{{ status }}">
+  <input type="hidden" name="selected" value="{{ selected }}">
+  <section class="table-card">
+    <div class="table-head">
+      <h2>Listado</h2>
+      <button type="submit">Guardar seleccion visible</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Sel.</th>
+            <th>Centro</th>
+            <th>Localidad</th>
+            <th>Check</th>
+            <th>Descarga</th>
+            <th>ZIP</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for center in centers %}
+          <tr>
+            <td>
+              <input type="hidden" name="visible_codes" value="{{ center.center_code }}">
+              <input type="checkbox" name="selected_codes" value="{{ center.center_code }}" {{ 'checked' if center.selected else '' }}>
+            </td>
+            <td>
+              <strong>{{ center.center_code }}</strong><br>
+              <span>{{ center.center_name }}</span><br>
+              <small>{{ center.email or 'sin email' }}</small>
+            </td>
+            <td>{{ center.city }}</td>
+            <td><span class="chip {{ center.check_status or 'pending' }}">{{ center.check_status or 'pendiente' }}</span><br><small>{{ center.checked_at or '' }}</small></td>
+            <td><span class="chip {{ center.download_status or 'pending' }}">{{ center.download_status or 'pendiente' }}</span><br><small>{{ center.download_mode or '' }}</small></td>
+            <td>
+              {% if center.download_id and center.download_status == 'downloaded' %}
+                <a href="{{ url_for('download_file', download_id=center.download_id) }}">{{ center.file_name }}</a><br>
+                <small>{{ center.file_size_bytes or 0 }} bytes</small>
+              {% else %}
+                <span class="muted">sin ZIP</span>
+              {% endif %}
+            </td>
+            <td><a class="detail-link" href="{{ url_for('center_detail', center_code=center.center_code) }}">Detalle</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="empty">No hay centros para este filtro.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</form>
+{% endblock %}

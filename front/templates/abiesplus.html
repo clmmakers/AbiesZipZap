@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Abies+ - AbiesZipZap{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <div>
+    <p class="eyebrow">Paso final</p>
+    <h1>Abies+</h1>
+    <p class="muted">Crea bibliotecas en Abies+ usando los ZIP descargados de AbiesWeb.</p>
+  </div>
+  <div class="stats">
+    <div><strong>{{ summary.total_eligible or 0 }}</strong><span>con ZIP</span></div>
+    <div><strong>{{ summary.selected_eligible or 0 }}</strong><span>de Centros</span></div>
+  </div>
+</section>
+
+<form method="post" action="{{ url_for('start_abiesplus') }}">
+  <section class="panel">
+    <h2>Lanzar creacion</h2>
+    <p class="muted">Marca centros en la tabla de abajo y lanza. Se procesan en una sola sesion de Abies+.</p>
+    <div class="abiesplus-form">
+      <div class="abiesplus-options">
+        <label class="process-check">
+          <input type="checkbox" name="dry_run" value="1" {{ 'checked' if defaults.get('abiesplus_default_dry_run', True) else '' }}>
+          <span class="check-copy">
+            <span class="field-label">Dry-run <span class="info-tip" tabindex="0" aria-label="Ayuda sobre dry-run" data-help="Valida ZIP/XML y rellena el formulario sin guardar. No crea la biblioteca. Recomendado la primera vez.">i</span></span>
+            <small>No crea nada; solo valida.</small>
+          </span>
+        </label>
+        <label class="process-check">
+          <input type="checkbox" name="usar_registro" value="1" {{ 'checked' if defaults.get('abiesplus_default_usar_registro', False) else '' }}>
+          <span class="check-copy">
+            <span class="field-label">Usar registro <span class="info-tip" tabindex="0" aria-label="Ayuda sobre usar registro" data-help="Activa 'utilizar campos de registro en ejemplares' para todo el lote.">i</span></span>
+            <small>Campos de registro en ejemplares.</small>
+          </span>
+        </label>
+        <label class="process-check">
+          <input type="checkbox" name="syncusers" value="1" {{ 'checked' if defaults.get('abiesplus_default_syncusers', False) else '' }}>
+          <span class="check-copy">
+            <span class="field-label">Syncusers <span class="info-tip" tabindex="0" aria-label="Ayuda sobre syncusers" data-help="Activa 'visualizar menus de sincronizacion de usuarios' para todo el lote.">i</span></span>
+            <small>Menus de sincronizacion de usuarios.</small>
+          </span>
+        </label>
+        <label class="process-check">
+          <input type="checkbox" name="importusers" value="1" {{ 'checked' if defaults.get('abiesplus_default_importusers', False) else '' }}>
+          <span class="check-copy">
+            <span class="field-label">Importusers <span class="info-tip" tabindex="0" aria-label="Ayuda sobre importusers" data-help="Activa 'bibliotecarios pueden importar usuarios masivamente' para todo el lote.">i</span></span>
+            <small>Importacion masiva de usuarios.</small>
+          </span>
+        </label>
+      </div>
+      <div class="abiesplus-actions">
+        <label class="process-field">
+          <span class="field-label">Solo codigos <span class="info-tip" tabindex="0" aria-label="Ayuda sobre solo codigos" data-help="Filtra por codigos concretos separados por coma. Si marcas centros en la tabla, esto se ignora.">i</span></span>
+          <input name="only_codes" value="" placeholder="Opcional: 60000165,60001066">
+        </label>
+        <button class="process-submit" type="submit">Crear bibliotecas en Abies+</button>
+      </div>
+    </div>
+    <p class="muted">Alternativa CLI:</p>
+    <pre><code>{{ command }}</code></pre>
+  </section>
+
+  <section class="table-card">
+    <div class="table-head">
+      <h2>Centros con ZIP descargado</h2>
+      <button type="submit">Lanzar seleccionados</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Sel.</th>
+            <th>Centro</th>
+            <th>Localidad</th>
+            <th>ZIP</th>
+            <th>Import</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for center in centers %}
+          <tr>
+            <td>
+              <input type="checkbox" name="selected_codes" value="{{ center.center_code }}" {{ 'checked' if center.selected else '' }}>
+            </td>
+            <td>
+              <strong>{{ center.center_code }}</strong><br>
+              <span>{{ center.center_name }}</span>
+            </td>
+            <td>{{ center.city }}</td>
+            <td>
+              {% if center.download_id %}
+                <a href="{{ url_for('download_file', download_id=center.download_id) }}">{{ center.file_name }}</a><br>
+                <small>{{ center.file_size_bytes or 0 }} bytes</small>
+              {% else %}
+                <span class="muted">sin ZIP</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if center.import_status %}
+                <span class="chip {{ center.import_status }}">{{ center.import_status }}</span><br>
+                <small>{{ center.imported_at or '' }}</small>
+              {% else %}
+                <span class="muted">pendiente</span>
+              {% endif %}
+            </td>
+            <td><a class="detail-link" href="{{ url_for('center_detail', center_code=center.center_code) }}">Detalle</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="empty">No hay centros con ZIP descargado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</form>
+{% endblock %}

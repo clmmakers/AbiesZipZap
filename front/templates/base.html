@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}AbiesZipZap{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('centers') }}">AbiesZipZap</a>
+    <nav>
+      <a href="{{ url_for('centers') }}">Centros</a>
+      <a href="{{ url_for('jobs') }}">Jobs</a>
+      <a href="{{ url_for('abiesplus') }}">Abies+</a>
+      <a href="{{ url_for('logs') }}">Logs</a>
+      <a href="{{ url_for('settings') }}">Configuracion</a>
+    </nav>
+  </header>
+  <main class="shell">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <span>AbiesZipZap</span>
+    <a href="https://github.com/clmmakers/AbiesZipZap" target="_blank" rel="noopener noreferrer">Repositorio original</a>
+    <span>AGPLv3</span>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+data/
+logs/
+downloads/
+state/
+debug_gestores/
+.agents/
+skills-lock.json

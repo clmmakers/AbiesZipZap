@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Job #{{ job.id }} - AbiesZipZap{% endblock %}
+{% block head %}
+  {% if job.status in ('queued', 'running') %}
+  <meta http-equiv="refresh" content="10">
+  {% endif %}
+{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <div>
+    <p class="eyebrow">Job #{{ job.id }}</p>
+    <h1>{{ job.status }}{% if job.status in ('queued', 'running') %} <span class="live-dot"></span>{% endif %}</h1>
+    <p class="muted">Modo {{ job.mode }} · {{ job.processed_centers }}/{{ job.total_centers }} centros procesados.</p>
+  </div>
+  <div class="stats">
+    {% if job.mode == 'abiesplus' %}
+      <div><strong>{{ job.processed_centers }}</strong><span>procesados</span></div>
+      <div><strong>{{ job.error_count }}</strong><span>errores</span></div>
+      <div><strong>{{ job.dry_run }}</strong><span>dry-run</span></div>
+    {% else %}
+      <div><strong>{{ job.downloaded_count }}</strong><span>descargados</span></div>
+      <div><strong>{{ job.skipped_count }}</strong><span>saltados</span></div>
+      <div><strong>{{ job.error_count }}</strong><span>errores</span></div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="panel">
+  <div class="table-head">
+    <h2>Resumen</h2>
+    <a class="refresh-btn" href="{{ url_for('job_detail', job_id=job.id) }}">Actualizar</a>
+  </div>
+  <p><strong>Inicio:</strong> {{ job.started_at or '' }}</p>
+  <p><strong>Fin:</strong> {{ job.finished_at or '' }}</p>
+  {% if job.status in ('queued', 'running') %}<p class="muted">Refresco automatico cada 10s mientras el job este en curso.</p>{% endif %}
+  <p><strong>Comando:</strong> <code>{{ job.command or '' }}</code></p>
+  {% if job.reason %}<p><strong>Motivo:</strong> {{ job.reason }}</p>{% endif %}
+</section>
+
+<section class="table-card">
+  <div class="table-head"><h2>Centros</h2></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Centro</th>
+          <th>Estado</th>
+          <th>Intentos</th>
+          <th>Descarga</th>
+          <th>Motivo</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for center in centers %}
+        <tr>
+          <td><strong>{{ center.center_code }}</strong><br>{{ center.center_name }}<br><small>{{ center.city }}</small></td>
+          <td><span class="chip {{ center.status }}">{{ center.status }}</span><br><small>{{ center.started_at or '' }}</small></td>
+          <td>{{ center.attempt_count }}<br><small>exit: {{ center.last_exit_code if center.last_exit_code is not none else '' }}</small></td>
+          <td>
+            {% if center.download_id %}
+              <a href="{{ url_for('download_file', download_id=center.download_id) }}">{{ center.file_name or 'ZIP' }}</a><br>
+              <small>{{ center.file_size_bytes or 0 }} bytes</small>
+            {% else %}
+              <span class="muted">sin ZIP</span>
+            {% endif %}
+          </td>
+          <td>{{ center.reason or '' }}</td>
+          <td><a class="detail-link" href="{{ url_for('center_detail', center_code=center.center_code) }}">Centro</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="empty">No hay centros en este job.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="table-card">
+  <div class="table-head"><h2>Logs del job</h2></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Fecha</th><th>Centro</th><th>Accion</th><th>Estado</th><th>Mensaje</th></tr></thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td><small>{{ log.created_at }}</small></td>
+          <td>{{ log.center_code or '' }}<br><small>{{ log.center_name or '' }}</small></td>
+          <td>{{ log.action }}</td>
+          <td><span class="chip {{ log.status }}">{{ log.status }}</span></td>
+          <td>{{ log.message or '' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="empty">No hay logs para este job.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

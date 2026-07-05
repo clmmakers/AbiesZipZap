@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Logs - AbiesZipZap{% endblock %}
+{% block content %}
+<section class="hero compact"><div><p class="eyebrow">Auditoria</p><h1>Logs</h1><p class="muted">Ultimos eventos registrados por AbiesZipZap.</p></div></section>
+<section class="panel">
+  <form class="filters" method="get" action="{{ url_for('logs') }}">
+    <input name="center_code" value="{{ center_code }}" placeholder="Codigo centro">
+    <select name="action"><option value="">Todas las acciones</option>{% for row in actions %}<option value="{{ row.action }}" {{ 'selected' if action == row.action else '' }}>{{ row.action }}</option>{% endfor %}</select>
+    <button type="submit">Filtrar</button>
+  </form>
+</section>
+<section class="table-card"><div class="table-wrap"><table><thead><tr><th>Centro</th><th>Accion</th><th>Estado</th><th>Mensaje</th><th>Fecha</th></tr></thead><tbody>
+{% for log in logs %}<tr><td>{% if log.center_code %}<a href="{{ url_for('center_detail', center_code=log.center_code) }}">{{ log.center_code }}</a><br><small>{{ log.center_name }}</small>{% endif %}</td><td>{{ log.action }}</td><td><span class="chip {{ log.status }}">{{ log.status }}</span></td><td>{{ log.message }}</td><td>{{ log.created_at }}</td></tr>{% else %}<tr><td colspan="5" class="empty">Sin logs.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

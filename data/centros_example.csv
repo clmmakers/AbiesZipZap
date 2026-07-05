@@ -1,0 +1,4 @@
+Provincia,Localidad,Código Centro,Denominación Centro,Nombre de centro,Titularidad,Código Postal,Dirección Postal,Correo Electrónico,Teléfono
+Extranjero,Ciudad Ejemplo,99900001,C.E.E.,CENTRO DE EJEMPLO UNO,Público,00001,CALLE EJEMPLO 1,centro1@example.invalid,+000000001
+Extranjero,Villa Demo,99900002,C.E.E.,COLEGIO DEMO DOS,Público,00002,AVENIDA DEMO 2,centro2@example.invalid,+000000002
+Extranjero,Poblacion Prueba,99900003,C.E.E.,INSTITUTO PRUEBA TRES,Público,00003,PLAZA PRUEBA 3,centro3@example.invalid,+000000003

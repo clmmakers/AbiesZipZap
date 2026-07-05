@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Jobs - AbiesZipZap{% endblock %}
+{% block head %}
+  {% if summary.active_count %}
+  <meta http-equiv="refresh" content="10">
+  {% endif %}
+{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <div>
+    <p class="eyebrow">Orquestador</p>
+    <h1>Jobs{% if summary.active_count %} <span class="live-dot"></span>{% endif %}</h1>
+    <p class="muted">Ejecuciones secuenciales registradas en SQLite.{% if summary.active_count %} Refresco automatico cada 10s.{% endif %}</p>
+  </div>
+  <div class="stats">
+    <div><strong>{{ summary.total or 0 }}</strong><span>total</span></div>
+    <div><strong>{{ summary.active_count or 0 }}</strong><span>activos</span></div>
+    <div><strong>{{ summary.completed_count or 0 }}</strong><span>ok</span></div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Lanzar desde CLI</h2>
+  <p class="muted">El front no ejecuta Playwright. Prepara la seleccion en Centros y lanza:</p>
+  <pre><code>{{ command }}</code></pre>
+  <p class="muted">Con un reintento por error tecnico:</p>
+  <pre><code>{{ command }} --retries 1</code></pre>
+</section>
+
+<section class="table-card">
+  <div class="table-head"><h2>Ultimos jobs</h2> <a class="refresh-btn" href="{{ url_for('jobs') }}">Actualizar</a></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Estado</th>
+          <th>Modo</th>
+          <th>Progreso</th>
+          <th>Resultado</th>
+          <th>Fechas</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td><strong>#{{ job.id }}</strong></td>
+          <td><span class="chip {{ job.status }}">{{ job.status }}</span></td>
+          <td>{{ job.mode }}<br><small>reintentos: {{ job.retries }}</small></td>
+          <td>{{ job.processed_centers }}/{{ job.total_centers }}</td>
+          <td>
+            <small>descargados: {{ job.downloaded_count }}</small><br>
+            <small>saltados: {{ job.skipped_count }}</small><br>
+            <small>errores: {{ job.error_count }}</small>
+          </td>
+          <td><small>{{ job.started_at or '' }}</small><br><small>{{ job.finished_at or '' }}</small></td>
+          <td><a class="detail-link" href="{{ url_for('job_detail', job_id=job.id) }}">Detalle</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="empty">No hay jobs registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

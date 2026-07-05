@@ -1,0 +1,17 @@
+.env
+__pycache__/
+*.pyc
+
+# Runtime artifacts local to V2
+data/*.sqlite3
+logs/
+downloads/
+state/
+debug_gestores/
+
+# Local assistant/config artifacts
+.agents/
+skills-lock.json
+
+# Local throwaway CSVs; keep data/centros_example.csv tracked.
+data/test_*.csv

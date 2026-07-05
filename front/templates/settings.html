@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Configuracion - AbiesZipZap{% endblock %}
+{% block content %}
+<section class="hero compact"><div><p class="eyebrow">SQLite</p><h1>Configuracion</h1><p class="muted">Base actual: {{ db_path }}</p></div></section>
+
+<section class="panel narrow" id="csv">
+  <h2>CSV de centros</h2>
+  <p class="muted">CSV activo: <code>{{ active_csv }}</code></p>
+  <div class="actions-row">
+    <form method="post" action="{{ url_for('resync_csv') }}">
+      <button type="submit">Re-sincronizar CSV</button>
+    </form>
+  </div>
+  <p class="muted">Sube un nuevo CSV con tus centros (cabeceras MECD: Provincia, Localidad, Codigo Centro, Denominacion Centro, Nombre de centro, Titularidad, Codigo Postal, Direccion Postal, Correo Electronico, Telefono).</p>
+  <p class="muted"><strong>Comportamiento de la sincronizacion:</strong> upsert por Codigo Centro. Los centros nuevos se insertan; los existentes se actualizan sus datos (nombre, provincia, email...) pero <strong>se conservan</strong> seleccion, prioridad y notas. Los centros que haya en la base y no esten en el CSV nuevo <strong>no se borran</strong> (quedan como estan).</p>
+  <form method="post" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data">
+    <label class="process-field">
+      <span class="field-label">Archivo CSV</span>
+      <input type="file" name="csv_file" accept=".csv" required>
+    </label>
+    <button class="process-submit" type="submit">Subir y sincronizar</button>
+  </form>
+</section>
+
+<section class="panel narrow">
+  <form method="post" action="{{ url_for('update_settings') }}" class="settings-form">
+    {% for row in settings %}
+      <label>
+        <span>{{ row.key }}</span>
+        <input name="{{ row.key }}" value="{{ row.value }}" {{ '' if row.key in ['export_reuse_max_age_days', 'local_timezone', 'orchestrator_default_retries', 'orchestrator_export_timeout_seconds', 'orchestrator_skip_downloaded_today', 'abiesplus_default_usar_registro', 'abiesplus_default_syncusers', 'abiesplus_default_importusers', 'abiesplus_default_dry_run'] else 'readonly' }}>
+        <small>{{ row.description }}</small>
+      </label>
+    {% endfor %}
+    <button type="submit">Guardar configuracion</button>
+  </form>
+</section>
+{% endblock %}
