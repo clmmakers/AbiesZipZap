@@ -606,6 +606,22 @@ def tipo_candidates(tipo: str, center_name: str) -> List[str]:
 
     add(tipo)
     tipo_norm = normalize_text(tipo)
+    tipo_key = re.sub(r"[^a-z0-9]", "", tipo_norm)
+    tipo_aliases = {
+        "ceip": "C.E.I.P.",
+        "ies": "I.E.S.",
+        "ieso": "I.E.S.O.",
+        "cee": "C.E.E.",
+        "cepa": "C.E.P.A.",
+        "cifp": "C.I.F.P.",
+        "cra": "C.R.A.",
+        "crie": "C.R.I.E.",
+        "cpr": "C.P.R.",
+        "eoi": "E.O.I.",
+        "eoep": "E.O.E.P.",
+        "seccies": "SECC.I.E.S.",
+    }
+    add(tipo_aliases.get(tipo_key, ""))
     if tipo_norm == "ctex":
         name_norm = normalize_text(center_name)
         if "instituto" in name_norm or "liceo" in name_norm:
@@ -615,6 +631,7 @@ def tipo_candidates(tipo: str, center_name: str) -> List[str]:
         add("Biblioteca")
     elif tipo_norm in {"cee", "c.e.e."}:
         add("Biblioteca")
+    add("Biblioteca")
     return candidates
 
 

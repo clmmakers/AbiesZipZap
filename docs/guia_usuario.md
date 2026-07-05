@@ -34,13 +34,7 @@ Si Abies+ corre en local y su HTML genera enlaces/formularios con `http://abiesp
 docker compose build
 ```
 
-3. Crea las carpetas de datos runtime con permisos para el contenedor:
-
-```bash
-mkdir -p data logs downloads state debug_gestores
-```
-
-> Importante: si Docker crea estas carpetas por ti al primer arranque, las crea como `root` y el contenedor (que corre como `appuser`, uid 1000) no podra escribir en ellas. Crealas tu antes con `mkdir -p` para que queden con tu usuario. Si ya las creo Docker como root y obtienes `PermissionError`, borralas (si estan vacias) y recrealas, o haz `sudo chown -R 1000:1000 data logs downloads state debug_gestores`.
+3. Las carpetas de datos runtime (`data`, `logs`, `downloads`, `state`, `debug_gestores`) ya vienen creadas al clonar el repositorio. No borres los archivos `.gitkeep`.
 
 4. Inicializa la base de datos (crea el esquema, sin centros):
 
@@ -74,6 +68,7 @@ Provincia,Localidad,Código Centro,Denominación Centro,Nombre de centro,Titular
 
 - **Obligatorias**: `Código Centro` y `Nombre de centro`.
 - El resto son recomendables (se usan para rellenar el formulario de Abies+ y validar contra el XML).
+- `Denominación Centro` se normaliza al cargar el CSV para coincidir con las opciones de Abies+ (`CEIP` -> `C.E.I.P.`, `IES` -> `I.E.S.`, etc.). Si el valor no se puede reconocer, se guarda como `Biblioteca` para evitar errores en el campo `Tipo` de Abies+.
 - El sistema valida las cabeceras al subir/sincronizar e informa de filas insertadas, actualizadas o con errores.
 
 ### Como aportar tu CSV
@@ -111,7 +106,7 @@ Listado de todos los centros con su ultimo estado de AbiesWeb y de descarga.
 
 ## Pantalla Detalle de centro (`/centers/<codigo>`)
 
-Historial de un centro: comprobaciones en AbiesWeb, gestores detectados, descargas y logs recientes.
+Historial de un centro: datos editables del centro, notas internas, comprobaciones en AbiesWeb, gestores detectados, descargas y logs recientes. Los datos editados se guardan en SQLite y se usan en pasos posteriores, incluida la creacion en Abies+.
 
 ## Pantalla Jobs (`/jobs`)
 
@@ -176,4 +171,4 @@ En **Centros** o **Detalle de centro**, el enlace del ZIP lo descarga directamen
 - **Provincia no coincide DB/XML**: ajusta `ABIESPLUS_PROVINCE_EQUIVALENCES` en `.env` y re-sincroniza.
 - **Abies+ responde `No autorizado` despues del login local**: revisa que `ABIESPLUS_BASE_URL` use el mismo origen que emite Abies+ en sus enlaces/formularios. En la instancia local probada debe ser `http://abiesplus-local:8080`, no `http://host.docker.internal:8080`.
 - **Timeout de exportacion**: aumenta `orchestrator_export_timeout_seconds` en **Configuracion**.
-- **`PermissionError` al lanzar job desde el front**: las carpetas `data logs downloads state debug_gestores` fueron creadas como `root` por Docker. Borralas (si vacias) y recrealas con tu usuario, o `sudo chown -R 1000:1000 data logs downloads state debug_gestores`.
+- **`PermissionError` al lanzar job desde el front**: las carpetas `data logs downloads state debug_gestores` deben pertenecer a tu usuario. Si las borraste y Docker las creo como `root`, haz `sudo chown -R 1000:1000 data logs downloads state debug_gestores`.

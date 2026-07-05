@@ -11,15 +11,40 @@
 </section>
 
 <section class="grid two">
-  <article class="panel"><h2>Datos del centro</h2><dl class="meta">
-    <dt>Tipo</dt><dd>{{ center.center_type }}</dd>
-    <dt>Titularidad</dt><dd>{{ center.ownership }}</dd>
-    <dt>Direccion</dt><dd>{{ center.postal_address }}</dd>
-    <dt>CP</dt><dd>{{ center.postal_code }}</dd>
-    <dt>Telefono</dt><dd>{{ center.phone }}</dd>
-    <dt>Seleccionado</dt><dd>{{ 'si' if center.selected else 'no' }}</dd>
-  </dl></article>
-  <article class="panel"><h2>Notas</h2><p>{{ center.notes or 'Sin notas.' }}</p></article>
+  <article class="panel">
+    <h2>Datos del centro</h2>
+    <form class="detail-form" method="post" action="{{ url_for('update_center_detail', center_code=center.center_code) }}">
+      <input type="hidden" name="action" value="data">
+      <label><span>Nombre</span><input name="center_name" value="{{ center.center_name }}" required></label>
+      <label><span>Tipo Abies+</span>
+        <select name="center_type" required>
+          {% for option in center_type_options %}
+            <option value="{{ option }}" {{ 'selected' if option == center.center_type else '' }}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label><span>Titularidad</span><input name="ownership" value="{{ center.ownership or '' }}"></label>
+      <label><span>Provincia</span><input name="province" value="{{ center.province or '' }}"></label>
+      <label><span>Localidad</span><input name="city" value="{{ center.city or '' }}"></label>
+      <label><span>Direccion</span><input name="postal_address" value="{{ center.postal_address or '' }}"></label>
+      <label><span>CP</span><input name="postal_code" value="{{ center.postal_code or '' }}"></label>
+      <label><span>Email</span><input name="email" value="{{ center.email or '' }}"></label>
+      <label><span>Telefono</span><input name="phone" value="{{ center.phone or '' }}"></label>
+      <div class="inline-options">
+        <label class="inline-check"><input type="checkbox" name="selected" value="1" {{ 'checked' if center.selected else '' }}> Seleccionado</label>
+        <label class="inline-check"><input type="checkbox" name="enabled" value="1" {{ 'checked' if center.enabled else '' }}> Activo</label>
+      </div>
+      <button type="submit">Guardar datos</button>
+    </form>
+  </article>
+  <article class="panel">
+    <h2>Notas</h2>
+    <form class="detail-form" method="post" action="{{ url_for('update_center_detail', center_code=center.center_code) }}">
+      <input type="hidden" name="action" value="notes">
+      <label><span>Anotaciones internas</span><textarea name="notes" rows="12" placeholder="Sin notas.">{{ center.notes or '' }}</textarea></label>
+      <button type="submit">Guardar notas</button>
+    </form>
+  </article>
 </section>
 
 <section class="table-card"><h2>Descargas</h2><div class="table-wrap"><table><thead><tr><th>ID</th><th>Estado</th><th>Modo</th><th>Fecha export</th><th>Archivo</th><th>Fecha</th></tr></thead><tbody>

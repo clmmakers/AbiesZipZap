@@ -12,3 +12,4 @@
 .refresh-btn{display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#fff;font-weight:700;text-decoration:none;border-radius:12px;padding:8px 14px;font-size:.9rem}
 .refresh-btn:hover{background:#0f766e}
 .site-footer{display:flex;justify-content:center;gap:10px;align-items:center;margin:-38px auto 26px;color:var(--muted);font-size:.85rem}.site-footer a{color:var(--brand);font-weight:700;text-decoration:none}.site-footer a:hover{text-decoration:underline}
+.detail-form{display:grid;gap:12px}.detail-form label{display:grid;gap:5px}.detail-form label span{font-size:.82rem;font-weight:800;color:var(--brand)}.detail-form input,.detail-form select,.detail-form textarea{width:100%;background:var(--soft)}.detail-form textarea{resize:vertical;min-height:180px}.inline-options{display:flex;gap:10px;flex-wrap:wrap}.detail-form .inline-check{display:inline-flex;align-items:center;gap:8px}.detail-form .inline-check input{width:auto}

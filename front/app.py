@@ -26,6 +26,8 @@ def _load_init_db_module():
 _init_db_module = _load_init_db_module()
 init_db = _init_db_module.init_db
 sync_centers_csv = _init_db_module.sync_centers_csv
+normalize_center_type = _init_db_module.normalize_center_type
+CENTER_TYPE_OPTIONS = _init_db_module.ABIESPLUS_CENTER_TYPES
 
 
 def _active_csv_path(conn) -> Path:
@@ -208,7 +210,59 @@ def create_app() -> Flask:
             users = conn.execute("SELECT * FROM abiesweb_users WHERE center_code = ? ORDER BY id DESC LIMIT 50", (center_code,)).fetchall()
             downloads = conn.execute("SELECT * FROM downloads WHERE center_code = ? ORDER BY id DESC LIMIT 20", (center_code,)).fetchall()
             logs = conn.execute("SELECT * FROM session_logs WHERE center_code = ? ORDER BY id DESC LIMIT 50", (center_code,)).fetchall()
-        return render_template("center_detail.html", center=center, checks=checks, users=users, downloads=downloads, logs=logs)
+        return render_template(
+            "center_detail.html",
+            center=center,
+            checks=checks,
+            users=users,
+            downloads=downloads,
+            logs=logs,
+            center_type_options=CENTER_TYPE_OPTIONS,
+        )
+
+    @app.post("/centers/<center_code>/update")
+    def update_center_detail(center_code: str):
+        action = (request.form.get("action") or "data").strip()
+        with connect() as conn:
+            center = conn.execute("SELECT center_code FROM centers WHERE center_code = ?", (center_code,)).fetchone()
+            if not center:
+                abort(404)
+
+            if action == "notes":
+                conn.execute(
+                    "UPDATE centers SET notes = ?, updated_at = CURRENT_TIMESTAMP WHERE center_code = ?",
+                    ((request.form.get("notes") or "").strip(), center_code),
+                )
+                flash("Notas actualizadas", "success")
+            else:
+                center_type = normalize_center_type(request.form.get("center_type"))
+                selected = 1 if request.form.get("selected") == "1" else 0
+                enabled = 1 if request.form.get("enabled") == "1" else 0
+                conn.execute(
+                    """
+                    UPDATE centers
+                    SET province = ?, city = ?, center_type = ?, center_name = ?, ownership = ?,
+                        postal_code = ?, postal_address = ?, email = ?, phone = ?,
+                        selected = ?, enabled = ?, updated_at = CURRENT_TIMESTAMP
+                    WHERE center_code = ?
+                    """,
+                    (
+                        (request.form.get("province") or "").strip(),
+                        (request.form.get("city") or "").strip(),
+                        center_type,
+                        (request.form.get("center_name") or "").strip(),
+                        (request.form.get("ownership") or "").strip(),
+                        (request.form.get("postal_code") or "").strip(),
+                        (request.form.get("postal_address") or "").strip(),
+                        (request.form.get("email") or "").strip(),
+                        (request.form.get("phone") or "").strip(),
+                        selected,
+                        enabled,
+                        center_code,
+                    ),
+                )
+                flash("Datos del centro actualizados", "success")
+        return redirect(url_for("center_detail", center_code=center_code))
 
     @app.post("/jobs/start")
     def start_job():

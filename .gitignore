@@ -2,12 +2,23 @@
 __pycache__/
 *.pyc
 
-# Runtime artifacts local to V2
-data/*.sqlite3
-logs/
-downloads/
-state/
-debug_gestores/
+# Runtime artifacts local to AbiesZipZap.
+# Keep the directories in Git via .gitkeep, but ignore local contents.
+data/*
+!data/.gitkeep
+!data/centros_example.csv
+
+logs/*
+!logs/.gitkeep
+
+downloads/*
+!downloads/.gitkeep
+
+state/*
+!state/.gitkeep
+
+debug_gestores/*
+!debug_gestores/.gitkeep
 
 # Local assistant/config artifacts
 .agents/

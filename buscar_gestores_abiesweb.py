@@ -19,7 +19,7 @@ from playwright.sync_api import Error as PlaywrightError, Page, TimeoutError as 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 from abies_backup import Config, init_browser, login, new_context, save_auth_state  # noqa: E402
-from db.init_db import init_db, sync_centers_csv  # noqa: E402
+from db.init_db import init_db, normalize_center_type, sync_centers_csv  # noqa: E402
 
 
 GESTION_SELECTOR = "#menu000_txt"
@@ -169,7 +169,7 @@ def upsert_center(conn: sqlite3.Connection, center: dict[str, str], csv_path: Pa
             center_code(center),
             clean_text(center.get("Provincia", "")),
             clean_text(center.get("Localidad", "")),
-            clean_text(center.get("Denominación Centro", "")),
+            normalize_center_type(center.get("Denominación Centro", "")),
             center_name(center),
             clean_text(center.get("Titularidad", "")),
             clean_text(center.get("Código Postal", "")),

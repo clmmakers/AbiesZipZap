@@ -55,7 +55,6 @@ Alternativamente, el usuario puede arrancar el front y subir su propio CSV desde
 Desde el directorio del proyecto (`v2/` o `v3/`):
 
 ```bash
-mkdir -p data logs downloads state debug_gestores
 cp .env.example .env
 docker compose build
 docker compose run --rm abies-v2 python v2/db/init_db.py
@@ -73,6 +72,7 @@ http://127.0.0.1:8010/centers
 - `.env` no existe en el paquete o esta ignorado.
 - `data/v2.sqlite3` no esta versionado.
 - `downloads/`, `logs/`, `state/` y `debug_gestores/` no estan versionados.
+- `data/.gitkeep`, `logs/.gitkeep`, `downloads/.gitkeep`, `state/.gitkeep` y `debug_gestores/.gitkeep` existen para que las carpetas vengan creadas tras clonar.
 - `data/centros_example.csv` existe como ejemplo ficticio.
 - `docker compose config --quiet` no falla.
 - Compilacion Python OK:

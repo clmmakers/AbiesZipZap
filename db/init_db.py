@@ -1,7 +1,9 @@
 import argparse
 import csv
 import os
+import re
 import sqlite3
+import unicodedata
 from pathlib import Path
 
 
@@ -14,6 +16,88 @@ SCHEMA_PATH = SCRIPT_DIR / "schema.sql"
 
 def clean_text(value: str | None) -> str:
     return " ".join((value or "").split()).strip()
+
+
+ABIESPLUS_CENTER_TYPES = (
+    "A.E.P.A.",
+    "C.E.E.",
+    "C.E.I.P.",
+    "C.E.P.A.",
+    "C.F.M.R.",
+    "C.H.",
+    "C.I.F.P.",
+    "C.O.D.",
+    "C.O.M.",
+    "C.P.A.P.D.",
+    "C.P.R.",
+    "C.R.A.",
+    "C.R.I.E.",
+    "COL.",
+    "COL.E.D.",
+    "COL.F.P.",
+    "COL.E.E.",
+    "COL.E.I.",
+    "E.A.O.",
+    "E.E.I.",
+    "E.F.A.",
+    "E.H.",
+    "E.O.E.P.",
+    "E.O.I.",
+    "E.S.A.D.",
+    "I.E.S.",
+    "I.E.S.O.",
+    "SECC.I.E.S.",
+    "Biblioteca",
+)
+ABIESPLUS_DEFAULT_CENTER_TYPE = "Biblioteca"
+
+
+def _center_type_key(value: str | None) -> str:
+    normalized = unicodedata.normalize("NFD", clean_text(value).upper())
+    ascii_text = "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
+    return re.sub(r"[^A-Z0-9]", "", ascii_text)
+
+
+_CENTER_TYPE_BY_KEY = {_center_type_key(value): value for value in ABIESPLUS_CENTER_TYPES}
+_CENTER_TYPE_ALIASES = {
+    "AEPA": "A.E.P.A.",
+    "CEE": "C.E.E.",
+    "CEIP": "C.E.I.P.",
+    "CEPA": "C.E.P.A.",
+    "CFMR": "C.F.M.R.",
+    "CH": "C.H.",
+    "CIFP": "C.I.F.P.",
+    "COD": "C.O.D.",
+    "COM": "C.O.M.",
+    "CPAPD": "C.P.A.P.D.",
+    "CPR": "C.P.R.",
+    "CRA": "C.R.A.",
+    "CRIE": "C.R.I.E.",
+    "COL": "COL.",
+    "COLED": "COL.E.D.",
+    "COLFP": "COL.F.P.",
+    "COLEE": "COL.E.E.",
+    "COLEI": "COL.E.I.",
+    "EAO": "E.A.O.",
+    "EEI": "E.E.I.",
+    "EFA": "E.F.A.",
+    "EH": "E.H.",
+    "EOEP": "E.O.E.P.",
+    "EOI": "E.O.I.",
+    "ESAD": "E.S.A.D.",
+    "IES": "I.E.S.",
+    "IESO": "I.E.S.O.",
+    "SECCIES": "SECC.I.E.S.",
+    "SECCIONIES": "SECC.I.E.S.",
+    "BIBLIOTECA": "Biblioteca",
+}
+
+
+def normalize_center_type(value: str | None) -> str:
+    key = _center_type_key(value)
+    if not key:
+        return ABIESPLUS_DEFAULT_CENTER_TYPE
+    return _CENTER_TYPE_BY_KEY.get(key) or _CENTER_TYPE_ALIASES.get(key) or ABIESPLUS_DEFAULT_CENTER_TYPE
 
 
 def init_db(db_path: Path) -> None:
@@ -240,6 +324,25 @@ def ensure_columns(conn: sqlite3.Connection) -> None:
         "INSERT OR IGNORE INTO schema_migrations (version, description) VALUES (?, ?)",
         (7, "centers_csv_path setting for front csv upload and resync"),
     )
+    normalize_existing_center_types(conn)
+    conn.execute(
+        "INSERT OR IGNORE INTO schema_migrations (version, description) VALUES (?, ?)",
+        (8, "normalize center_type values to Abies+ options"),
+    )
+
+
+def normalize_existing_center_types(conn: sqlite3.Connection) -> None:
+    rows = conn.execute("SELECT center_code, center_type FROM centers").fetchall()
+    updates = []
+    for center_code, center_type in rows:
+        normalized = normalize_center_type(center_type)
+        if normalized != (center_type or ""):
+            updates.append((normalized, center_code))
+    if updates:
+        conn.executemany(
+            "UPDATE centers SET center_type = ?, updated_at = CURRENT_TIMESTAMP WHERE center_code = ?",
+            updates,
+        )
 
 
 EXPECTED_CSV_HEADERS = (
@@ -271,7 +374,7 @@ def _parse_center_rows(csv_path: Path) -> list[dict]:
                     "center_code": center_code,
                     "province": clean_text(row.get("Provincia")),
                     "city": clean_text(row.get("Localidad")),
-                    "center_type": clean_text(row.get("Denominación Centro")),
+                    "center_type": normalize_center_type(row.get("Denominación Centro")),
                     "center_name": center_name,
                     "ownership": clean_text(row.get("Titularidad")),
                     "postal_code": clean_text(row.get("Código Postal")),
@@ -366,7 +469,7 @@ def sync_centers_csv(db_path: Path, csv_path: Path) -> dict:
                         "center_code": center_code,
                         "province": clean_text(row.get("Provincia")),
                         "city": clean_text(row.get("Localidad")),
-                        "center_type": clean_text(row.get("Denominación Centro")),
+                        "center_type": normalize_center_type(row.get("Denominación Centro")),
                         "center_name": center_name,
                         "ownership": clean_text(row.get("Titularidad")),
                         "postal_code": clean_text(row.get("Código Postal")),

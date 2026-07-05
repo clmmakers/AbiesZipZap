@@ -29,13 +29,7 @@ cp .env.example .env
 docker compose build
 ```
 
-4. Crea las carpetas de datos runtime:
-
-```bash
-mkdir -p data logs downloads state debug_gestores
-```
-
-> Si Docker las crea como root, el contenedor no podra escribir. Crealas tu antes del primer arranque.
+4. Las carpetas de datos runtime (`data`, `logs`, `downloads`, `state`, `debug_gestores`) ya vienen creadas en el repositorio. No borres los archivos `.gitkeep`.
 
 5. Inicializar la base SQLite (crea el esquema, sin centros):
 
@@ -86,6 +80,8 @@ data/v2.sqlite3
 ```
 
 El CSV solo actua como fuente inicial/sincronizacion de centros. Los estados, logs, usuarios y descargas se guardan en SQLite. A partir de ahi, SQLite es la unica fuente operativa.
+
+Durante la carga, `Denominación Centro` se normaliza al valor esperado por Abies+ (`CEIP` -> `C.E.I.P.`, `IES` -> `I.E.S.`, etc.). Si no hay coincidencia, se guarda `Biblioteca`.
 
 AbiesZipZap usa configuracion local en:
 

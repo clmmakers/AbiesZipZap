@@ -11,7 +11,7 @@ Repositorio original: https://github.com/clmmakers/AbiesZipZap
 
 Licencia: GNU Affero General Public License v3.0 o posterior (`AGPL-3.0-or-later`).
 
-SQLite es la **unica fuente operativa**: seleccion de centros, estados, jobs, logs y descargas. El CSV de centros es solo fuente inicial/sincronizacion.
+SQLite es la **unica fuente operativa**: seleccion de centros, estados, jobs, logs, descargas y correcciones manuales de datos. El CSV de centros es solo fuente inicial/sincronizacion.
 
 ## Componentes
 
@@ -77,6 +77,8 @@ Tablas principales (ver `db/schema.sql`):
 | `job_centers` | (`job_id`, `center_code`) | Resultado por centro dentro de un job. |
 | `session_logs` | `id` | Log audit por sesion/job. |
 | `schema_migrations` | `version` | Versiones de migracion aplicadas. |
+
+`centers.center_type` se normaliza desde `Denominación Centro` del CSV contra la lista de tipos admitidos por Abies+. Valores no reconocidos se guardan como `Biblioteca`.
 
 ### Settings clave (`app_settings`)
 
